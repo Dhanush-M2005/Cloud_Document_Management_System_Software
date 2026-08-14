@@ -1,6 +1,8 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { Amplify } from 'aws-amplify';
 import { fetchAuthSession, signIn, signOut, signUp, confirmSignUp, getCurrentUser, resetPassword, confirmResetPassword } from 'aws-amplify/auth';
+import { cognitoUserPoolsTokenProvider } from 'aws-amplify/auth/cognito';
+import { sessionStorage } from 'aws-amplify/utils';
 
 Amplify.configure({
     Auth: {
@@ -10,6 +12,8 @@ Amplify.configure({
         }
     }
 });
+
+cognitoUserPoolsTokenProvider.setKeyValueStorage(sessionStorage);
 
 export const AuthContext = createContext();
 
