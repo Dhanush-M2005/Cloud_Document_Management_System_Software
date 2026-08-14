@@ -42,6 +42,20 @@ If you need to store highly sensitive documents, track every single interaction 
 
 ---
 
+## 📸 System Interfaces
+
+<div align="center">
+  <img src="docs/assets/ui_preview_5.png" alt="Zero-Trust Access Gateway" width="92%" style="border-radius: 12px; margin: 10px;" />
+  <br/>
+  <img src="docs/assets/ui_preview_4.png" alt="Dashboard Command Centre" width="45%" style="border-radius: 12px; margin: 10px;" />
+  <img src="docs/assets/ui_preview_3.png" alt="Admin System Nexus" width="45%" style="border-radius: 12px; margin: 10px;" />
+  <br/>
+  <img src="docs/assets/ui_preview_2.png" alt="Secure Node Ingestion" width="45%" style="border-radius: 12px; margin: 10px;" />
+  <img src="docs/assets/ui_preview_1.png" alt="Temporal Link Synthesis" width="45%" style="border-radius: 12px; margin: 10px;" />
+</div>
+
+---
+
 ## 🚀 Technologies Used
 
 CDMS completely detaches the Frontend application layer from the Backend storage matrix via massive scalable serverless architecture.
