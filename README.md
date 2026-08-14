@@ -7,7 +7,10 @@
   <br />
   <br />
 
-  <h1>🌌 CDMS (Cloud Document Management System)</h1>
+  <h1>
+    <img src="docs/assets/cdms_branding.svg" width="40" style="vertical-align: middle; margin-right: 10px;" /> 
+    CDMS (Cloud Document Management System)
+  </h1>
   
   <p>
     An enterprise-grade, highly secure cloud architecture designed to ingest, encrypt, and manage data nodes at scale.
