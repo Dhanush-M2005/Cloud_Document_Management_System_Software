@@ -222,40 +222,40 @@ const Dashboard = () => {
             <div className="glass-panel" style={{ marginBottom: '2rem', padding: '2rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
                     <div>
-                        <h2 className="text-gradient" style={{ marginBottom: '0.2rem', fontSize: '2rem' }}>Command Centre</h2>
-                        <p style={{ color: 'var(--text-muted)' }}>Entity <strong style={{ color: 'var(--primary-accent)', letterSpacing: '0.05em' }}>{user?.name || user?.email?.split('@')[0]}</strong> • Status: <span className="badge badge-green">{user?.role || 'VIEWER'}</span></p>
+                        <h2 className="text-gradient" style={{ marginBottom: '0.2rem', fontSize: '2rem' }}>Dashboard</h2>
+                        <p style={{ color: 'var(--text-muted)' }}>Welcome, <strong style={{ color: 'var(--primary-accent)', letterSpacing: '0.05em' }}>{user?.name || user?.email?.split('@')[0]}</strong> • Role: <span className="badge badge-green">{user?.role || 'VIEWER'}</span></p>
                     </div>
                     <div style={{ display: 'flex', gap: '1rem' }}>
                         {canEdit && (
                             <Link to="/upload">
                                 <button className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                                    Inject Data
+                                    Upload Files
                                 </button>
                             </Link>
                         )}
                         <button onClick={logout} className="btn btn-ghost" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                            Terminate
+                            Logout
                         </button>
                     </div>
                 </div>
 
                 <div className="stats-grid">
                     <div className="stat-card">
-                        <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Stored Nodes</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Total Files</div>
                         <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--text-pure)' }}>
                             {documents.length}
                         </div>
                     </div>
                     <div className="stat-card">
-                        <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Cloud Footprint</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Total Storage</div>
                         <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--text-pure)' }}>
                             {documents.length > 0 ? (documents.reduce((acc, doc) => acc + (doc.fileSize || 0), 0) / 1024 / 1024).toFixed(2) : '0.00'} <span style={{ fontSize: '1.25rem', color: 'var(--text-muted)' }}>MB</span>
                         </div>
                     </div>
                     <div className="stat-card">
-                        <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Active Tunnels</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Active Shares</div>
                         <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--primary-accent)' }}>
                             {activeSharesCount}
                         </div>
@@ -264,7 +264,7 @@ const Dashboard = () => {
             </div>
 
             <div className="glass-panel" style={{ padding: '2rem' }}>
-                <h3 className="text-gradient" style={{ marginBottom: '1.5rem', fontSize: '1.5rem' }}>Encrypted Matrix</h3>
+                <h3 className="text-gradient" style={{ marginBottom: '1.5rem', fontSize: '1.5rem' }}>My Documents</h3>
 
                 {loading ? (
                     <div className="loader-overlay">
@@ -273,11 +273,11 @@ const Dashboard = () => {
                 ) : documents.length === 0 ? (
                     <div style={{ padding: '4rem 2rem', textAlign: 'center' }}>
                         <div style={{ fontSize: '4rem', marginBottom: '1.5rem', filter: 'grayscale(1) opacity(0.3)' }}>🗂️</div>
-                        <h3 style={{ marginBottom: '0.5rem', color: 'var(--text-pure)' }}>Zero Documents Active</h3>
-                        <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>The system is heavily awaiting initial data ingestion protocols.</p>
+                        <h3 style={{ marginBottom: '0.5rem', color: 'var(--text-pure)' }}>No Documents Found</h3>
+                        <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>You haven't uploaded any files to the cloud yet.</p>
                         {canEdit && (
                             <Link to="/upload">
-                                <button className="btn btn-primary" style={{ padding: '0.75rem 2rem' }}>Begin Operation</button>
+                                <button className="btn btn-primary" style={{ padding: '0.75rem 2rem' }}>Upload File</button>
                             </Link>
                         )}
                     </div>
@@ -286,10 +286,10 @@ const Dashboard = () => {
                         <table>
                             <thead>
                                 <tr>
-                                    <th>File Designator</th>
-                                    <th>File Mass</th>
-                                    <th>Ingestion Date</th>
-                                    <th style={{ textAlign: 'right' }}>Execute Actions</th>
+                                    <th>File Name</th>
+                                    <th>Resolution</th>
+                                    <th>Date Uploaded</th>
+                                    <th style={{ textAlign: 'right' }}>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -346,18 +346,18 @@ const Dashboard = () => {
                     <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(8px)', padding: '1rem' }}>
                         <div className="glass-panel" style={{ width: '100%', maxWidth: '650px', maxHeight: '85vh', overflowY: 'auto', padding: '2rem' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                                <h3 className="text-gradient" style={{ margin: 0 }}>Active Active Tunnels</h3>
+                                <h3 className="text-gradient" style={{ margin: 0 }}>Active Share Links</h3>
                                 <button type="button" onClick={() => setManagingSharesFor(null)} className="icon-btn">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                                 </button>
                             </div>
-                            <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', fontSize: '0.95rem' }}>Monitoring external links connected to <strong>{managingSharesFor.fileName}</strong>.</p>
+                            <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', fontSize: '0.95rem' }}>Managing currently active share URLs for <strong>{managingSharesFor.fileName}</strong>.</p>
 
                             {isFetchingShares ? (
                                 <div className="loader-overlay" style={{ minHeight: '100px' }}><div className="spinner"></div></div>
                             ) : fetchedShares.length === 0 ? (
                                 <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: 'var(--radius-sm)' }}>
-                                    No active tokens discovered on network.
+                                    No active share links found for this file.
                                 </div>
                             ) : (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -378,7 +378,7 @@ const Dashboard = () => {
                                                     <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Created <span style={{ color: '#fff' }}>{new Date(s.createdAt).toLocaleDateString()}</span> • Expires <span style={{ color: '#fff' }}>{new Date(s.expiresAt).toLocaleDateString()}</span></div>
                                                 </div>
                                                 {(!isRevoked && !isExpired) && (
-                                                    <button onClick={() => revokeShare(s.shareToken)} className="btn btn-ghost" style={{ border: '1px solid var(--error)', color: 'var(--error)', padding: '0.4rem 1rem' }}>Terminate Link</button>
+                                                    <button onClick={() => revokeShare(s.shareToken)} className="btn btn-ghost" style={{ border: '1px solid var(--error)', color: 'var(--error)', padding: '0.4rem 1rem' }}>Revoke Access</button>
                                                 )}
                                             </div>
                                         )
@@ -423,12 +423,12 @@ const Dashboard = () => {
                             <div style={{ fontSize: '3rem', marginBottom: '1.5rem', animation: 'fadeUp 0.6s ease' }}>🔗</div>
                             {!shareResult ? (
                                 <>
-                                    <h3 className="text-gradient" style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>Synthesize Link</h3>
-                                    <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', fontSize: '0.95rem' }}>Configure the temporal link bindings for <strong style={{ color: '#fff' }}>{shareConfig.fileName}</strong>.</p>
+                                    <h3 className="text-gradient" style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>Create Share Link</h3>
+                                    <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', fontSize: '0.95rem' }}>Configure link sharing parameters for <strong style={{ color: '#fff' }}>{shareConfig.fileName}</strong>.</p>
 
                                     <form onSubmit={executeShare}>
                                         <div style={{ marginBottom: '2rem', textAlign: 'left' }}>
-                                            <label style={{ display: 'block', marginBottom: '0.75rem', color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Network Clearance</label>
+                                            <label style={{ display: 'block', marginBottom: '0.75rem', color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Audience Status</label>
                                             <div style={{ display: 'flex', gap: '0.75rem' }}>
                                                 <div
                                                     onClick={() => setAccessLevel('PUBLIC')}

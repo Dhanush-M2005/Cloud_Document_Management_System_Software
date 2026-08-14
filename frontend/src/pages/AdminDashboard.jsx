@@ -116,8 +116,8 @@ const AdminDashboard = () => {
     return (
         <div style={{ maxWidth: '100%', margin: '0 auto', animation: 'fadeUp 0.6s ease' }}>
             <div className="glass-panel" style={{ marginBottom: '2rem', padding: '2rem' }}>
-                <h2 className="text-gradient" style={{ marginBottom: '0.2rem', fontSize: '2rem' }}>System Nexus</h2>
-                <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>Global authorization overrides and cryptographic oversight.</p>
+                <h2 className="text-gradient" style={{ marginBottom: '0.2rem', fontSize: '2rem' }}>Admin Dashboard</h2>
+                <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>Global system metrics and user management.</p>
 
                 {loading ? (
                     <div className="loader-overlay" style={{ minHeight: '150px' }}><div className="spinner"></div></div>
@@ -125,22 +125,22 @@ const AdminDashboard = () => {
                     <>
                         <div className="stats-grid">
                             <div className="stat-card">
-                                <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Network Mass</div>
+                                <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Total Storage</div>
                                 <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--text-pure)' }}>{metrics.totalStorageMB} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>MB</span></div>
                             </div>
                             <div className="stat-card">
-                                <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Cloud Nodes</div>
+                                <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Total Documents</div>
                                 <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--text-pure)' }}>{metrics.totalDocuments}</div>
                             </div>
                             <div className="stat-card">
-                                <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Audit Transactions</div>
+                                <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Audit Logs</div>
                                 <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--warning)' }}>{metrics.totalEvents}</div>
                             </div>
                         </div>
 
                         <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', marginTop: '1rem' }}>
-                            <button onClick={() => setActiveTab('USERS')} className={`btn ${activeTab === 'USERS' ? 'btn-primary' : 'btn-ghost'}`} style={{ borderRadius: '30px', padding: '0.6rem 2rem' }}>Access Hierarchy</button>
-                            <button onClick={() => setActiveTab('AUDIT')} className={`btn ${activeTab === 'AUDIT' ? 'btn-primary' : 'btn-ghost'}`} style={{ borderRadius: '30px', padding: '0.6rem 2rem' }}>Global Logs</button>
+                            <button onClick={() => setActiveTab('USERS')} className={`btn ${activeTab === 'USERS' ? 'btn-primary' : 'btn-ghost'}`} style={{ borderRadius: '30px', padding: '0.6rem 2rem' }}>User Roles</button>
+                            <button onClick={() => setActiveTab('AUDIT')} className={`btn ${activeTab === 'AUDIT' ? 'btn-primary' : 'btn-ghost'}`} style={{ borderRadius: '30px', padding: '0.6rem 2rem' }}>Activity Logs</button>
                         </div>
                     </>
                 )}
@@ -153,11 +153,11 @@ const AdminDashboard = () => {
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>Entity ID (AWS)</th>
-                                        <th>Origin Routing</th>
-                                        <th>Network Role</th>
-                                        <th>Clearance</th>
-                                        <th style={{ textAlign: 'right' }}>Security Actions</th>
+                                        <th>User ID</th>
+                                        <th>Email Address</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th style={{ textAlign: 'right' }}>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -183,11 +183,11 @@ const AdminDashboard = () => {
                                             </td>
                                             <td style={{ textAlign: 'right' }}>
                                                 {u.Enabled ? (
-                                                    <button className="icon-btn danger" title="Purge Record" onClick={() => promptStatusToggle(u.Username, u.Enabled)}>
+                                                    <button className="icon-btn danger" title="Quarantine User" onClick={() => promptStatusToggle(u.Username, u.Enabled)}>
                                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                                                     </button>
                                                 ) : (
-                                                    <button className="icon-btn success" title="Approve Entity" onClick={() => promptStatusToggle(u.Username, u.Enabled)}>
+                                                    <button className="icon-btn success" title="Activate User" onClick={() => promptStatusToggle(u.Username, u.Enabled)}>
                                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                                                     </button>
                                                 )}
@@ -204,11 +204,11 @@ const AdminDashboard = () => {
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>Capture Timestamp</th>
-                                        <th>Entity Fingerprint</th>
-                                        <th>Command Vector</th>
-                                        <th>Node Target</th>
-                                        <th>Execution Status</th>
+                                        <th>Date &amp; Time</th>
+                                        <th>User ID</th>
+                                        <th>Action</th>
+                                        <th>Document ID</th>
+                                        <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -241,19 +241,19 @@ const AdminDashboard = () => {
                                 {statusConfig.isDeactivating ? '⚠️' : '🛡️'}
                             </div>
                             <h3 style={{ marginBottom: '1rem', color: statusConfig.isDeactivating ? 'var(--error)' : 'var(--success)' }}>
-                                {statusConfig.isDeactivating ? 'Permanent Erasure Protocol?' : 'Authorize Identity Network?'}
+                                {statusConfig.isDeactivating ? 'Quarantine User?' : 'Activate User?'}
                             </h3>
                             <p style={{ color: 'var(--text-muted)', marginBottom: '2.5rem', fontSize: '0.95rem', lineHeight: '1.6' }}>
-                                Awaiting absolute confirmation to {statusConfig.action === 'DISABLE' ? 'expunge' : 'synchronize'} the identity block matching <br /><strong style={{ fontFamily: 'monospace', color: 'var(--text-pure)', padding: '0.2rem 0.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', letterSpacing: '1px' }}>{statusConfig.username}</strong>.<br /><br />
+                                Are you sure you want to {statusConfig.action === 'DISABLE' ? 'quarantine' : 'activate'} the account <br /><strong style={{ fontFamily: 'monospace', color: 'var(--text-pure)', padding: '0.2rem 0.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', letterSpacing: '1px' }}>{statusConfig.username}</strong>?<br /><br />
                                 {statusConfig.isDeactivating
-                                    ? "Execution purges AWS routing metrics universally. Recovery impossible."
-                                    : "Entity will instantly inherit associated Dashboard read/write authorities."}
+                                    ? "This action will disable the user's access to the system."
+                                    : "The user will instantly inherit permissions associated with their role."}
                             </p>
                             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
                                 <button type="button" onClick={executeStatusToggle} disabled={isStatusUpdating} className="btn" style={{ flex: 1, background: statusConfig.isDeactivating ? 'var(--error)' : 'var(--success)', color: '#fff', fontSize: '1rem' }}>
-                                    {isStatusUpdating ? 'Executing...' : `Confirm ${statusConfig.action === 'DISABLE' ? 'Purge' : 'Sync'}`}
+                                    {isStatusUpdating ? 'Executing...' : `Confirm`}
                                 </button>
-                                <button type="button" onClick={() => setStatusConfig(null)} disabled={isStatusUpdating} className="btn btn-ghost" style={{ flex: 1 }}>Abort</button>
+                                <button type="button" onClick={() => setStatusConfig(null)} disabled={isStatusUpdating} className="btn btn-ghost" style={{ flex: 1 }}>Cancel</button>
                             </div>
                         </div>
                     </div>
