@@ -1,0 +1,58 @@
+# ==========================================
+# 🌌 CDMS Global Configuration Ignores
+# ==========================================
+
+# 1. Environment Variables & High-Security Secrets
+.env
+.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
+*.cert
+credentials.json
+auth.json
+secrets.json
+config.json
+
+# 2. Node Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# 3. AWS Serverless Outputs (Backend)
+backend/.serverless/
+.serverless/
+backend/cf-outputs.json
+backend/deploy.log
+backend/deploy.err.txt
+backend/e2e_out.txt
+backend/e2e_err.txt
+
+# 4. Vite / React Build Artifacts (Frontend)
+frontend/dist/
+frontend/dist-ssr/
+frontend/build/
+.firebase/
+frontend/.firebase/
+frontend/build_err.txt
+
+# 5. OS & Editor Specific
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+
+# 6. Global Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# 7. Coverage & Testing
+coverage/
+.nyc_output/

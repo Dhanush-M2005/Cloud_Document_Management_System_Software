@@ -1,0 +1,40 @@
+# ==========================================
+# 🌌 CDMS Backend Configuration Ignores
+# ==========================================
+
+# 1. Environment & Keys
+.env
+.env.*
+*.pem
+*.key
+*.cert
+credentials.json
+auth.json
+secrets.json
+
+# 2. Node Dependencies
+node_modules/
+package-lock.json
+
+# 3. Serverless Framework Artifacts
+.serverless/
+cf-outputs.json
+
+# 4. Logs & Test Outputs
+*.log
+deploy.log
+deploy.err.txt
+e2e_out.txt
+e2e_err.txt
+e2e_out2.txt
+db_out.txt
+db_out2.txt
+npm-debug.log*
+
+# 5. OS Output
+.DS_Store
+Thumbs.db
+
+# 6. Testing coverage
+coverage/
+.nyc_output/

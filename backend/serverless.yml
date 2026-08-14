@@ -1,0 +1,421 @@
+service: cdms-backend
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: ap-south-1
+  stage: ${opt:stage, 'dev'}
+  httpApi:
+    cors:
+      allowedOrigins:
+        - https://cdms16.web.app
+        - http://localhost:5173
+      allowedHeaders:
+        - Content-Type
+        - Authorization
+      allowedMethods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - PATCH
+      allowCredentials: true
+  environment:
+    DOCUMENTS_TABLE: ${self:service}-${self:provider.stage}-documents
+    SHARE_LINKS_TABLE: ${self:service}-${self:provider.stage}-share-links
+    AUDIT_LOGS_TABLE: ${self:service}-${self:provider.stage}-audit-logs
+    S3_BUCKET_NAME: cdms-storage-${aws:accountId}
+    SNS_TOPIC_ARN: !Join [':', ['arn:aws:sns', '${self:provider.region}', '${aws:accountId}', '${self:service}-${self:provider.stage}-notifications']]
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource:
+            - !GetAtt DocumentsTable.Arn
+            - !GetAtt ShareLinksTable.Arn
+            - !GetAtt AuditLogsTable.Arn
+        - Effect: Allow
+          Action:
+            - s3:PutObject
+            - s3:GetObject
+            - s3:DeleteObject
+            - s3:PutObjectTagging
+          Resource: !Join ['', ['arn:aws:s3:::', '${self:provider.environment.S3_BUCKET_NAME}', '/*']]
+        - Effect: Allow
+          Action:
+            - sns:Publish
+          Resource: !Join [':', ['arn:aws:sns', '${self:provider.region}', '${aws:accountId}', '${self:service}-${self:provider.stage}-notifications']]
+        - Effect: Allow
+          Action:
+            - cognito-idp:ListUsers
+            - cognito-idp:AdminCreateUser
+            - cognito-idp:AdminDisableUser
+            - cognito-idp:AdminEnableUser
+            - cognito-idp:AdminDeleteUser
+            - cognito-idp:AdminAddUserToGroup
+            - cognito-idp:AdminRemoveUserFromGroup
+            - cognito-idp:AdminListGroupsForUser
+          Resource: !Join [':', ['arn:aws:cognito-idp', '${self:provider.region}', '${aws:accountId}', 'userpool/*']]
+
+functions:
+  preSignUp:
+    handler: functions/auth/preSignUp.handler
+
+  hello:
+    handler: functions/hello.handler
+    events:
+      - httpApi:
+          path: /
+          method: get
+          
+  getUploadUrl:
+    handler: functions/documents/getUploadUrl.handler
+    environment:
+      USER_POOL_ID: !Ref CognitoUserPool
+      CLIENT_ID: !Ref CognitoUserPoolClient
+    events:
+      - httpApi:
+          path: /documents/upload-url
+          method: post
+          
+  createDocument:
+    handler: functions/documents/createDocument.handler
+    environment:
+      USER_POOL_ID: !Ref CognitoUserPool
+      CLIENT_ID: !Ref CognitoUserPoolClient
+    events:
+      - httpApi:
+          path: /documents
+          method: post
+
+  listDocuments:
+    handler: functions/documents/listDocuments.handler
+    environment:
+      USER_POOL_ID: !Ref CognitoUserPool
+      CLIENT_ID: !Ref CognitoUserPoolClient
+    events:
+      - httpApi:
+          path: /documents
+          method: get
+
+  downloadDocument:
+    handler: functions/documents/downloadDocument.handler
+    environment:
+      USER_POOL_ID: !Ref CognitoUserPool
+      CLIENT_ID: !Ref CognitoUserPoolClient
+    events:
+      - httpApi:
+          path: /documents/{id}/download
+          method: get
+
+  deleteDocument:
+    handler: functions/documents/deleteDocument.handler
+    environment:
+      USER_POOL_ID: !Ref CognitoUserPool
+      CLIENT_ID: !Ref CognitoUserPoolClient
+    events:
+      - httpApi:
+          path: /documents/{id}
+          method: delete
+
+  renameDocument:
+    handler: functions/documents/renameDocument.handler
+    environment:
+      USER_POOL_ID: !Ref CognitoUserPool
+      CLIENT_ID: !Ref CognitoUserPoolClient
+    events:
+      - httpApi:
+          path: /documents/{id}
+          method: patch
+
+  createShareLink:
+    handler: functions/sharing/createShareLink.handler
+    environment:
+      USER_POOL_ID: !Ref CognitoUserPool
+      CLIENT_ID: !Ref CognitoUserPoolClient
+    events:
+      - httpApi:
+          path: /documents/{id}/share
+          method: post
+
+  listShareLinks:
+    handler: functions/sharing/listShareLinks.handler
+    environment:
+      USER_POOL_ID: !Ref CognitoUserPool
+      CLIENT_ID: !Ref CognitoUserPoolClient
+    events:
+      - httpApi:
+          path: /documents/{id}/shares
+          method: get
+
+  revokeShareLink:
+    handler: functions/sharing/revokeShareLink.handler
+    environment:
+      USER_POOL_ID: !Ref CognitoUserPool
+      CLIENT_ID: !Ref CognitoUserPoolClient
+    events:
+      - httpApi:
+          path: /shares/{shareId}
+          method: delete
+
+  listMyShares:
+    handler: functions/sharing/listMyShares.handler
+    environment:
+      USER_POOL_ID: !Ref CognitoUserPool
+      CLIENT_ID: !Ref CognitoUserPoolClient
+    events:
+      - httpApi:
+          path: /shares/me
+          method: get
+
+  accessSharedDocument:
+    handler: functions/sharing/accessSharedDocument.handler
+    environment:
+      USER_POOL_ID: !Ref CognitoUserPool
+      CLIENT_ID: !Ref CognitoUserPoolClient
+    events:
+      - httpApi:
+          path: /share/{token}
+          method: get
+
+  listUsers:
+    handler: functions/admin/listUsers.handler
+    environment:
+      USER_POOL_ID: !Ref CognitoUserPool
+      CLIENT_ID: !Ref CognitoUserPoolClient
+    events:
+      - httpApi:
+          path: /admin/users
+          method: get
+
+  updateUserStatus:
+    handler: functions/admin/updateUserStatus.handler
+    environment:
+      USER_POOL_ID: !Ref CognitoUserPool
+      CLIENT_ID: !Ref CognitoUserPoolClient
+    events:
+      - httpApi:
+          path: /admin/users/{id}/status
+          method: patch
+
+  updateUserRole:
+    handler: functions/admin/updateUserRole.handler
+    environment:
+      USER_POOL_ID: !Ref CognitoUserPool
+      CLIENT_ID: !Ref CognitoUserPoolClient
+    events:
+      - httpApi:
+          path: /admin/users/{id}/role
+          method: patch
+
+  listAuditLogs:
+    handler: functions/admin/listAuditLogs.handler
+    environment:
+      USER_POOL_ID: !Ref CognitoUserPool
+      CLIENT_ID: !Ref CognitoUserPoolClient
+    events:
+      - httpApi:
+          path: /admin/audit-logs
+          method: get
+
+  getMetrics:
+    handler: functions/admin/getMetrics.handler
+    environment:
+      USER_POOL_ID: !Ref CognitoUserPool
+      CLIENT_ID: !Ref CognitoUserPoolClient
+    events:
+      - httpApi:
+          path: /admin/metrics
+          method: get
+
+  quarantineUser:
+    handler: functions/auth/quarantineUser.handler
+
+
+  handleUploadEvent:
+    handler: functions/notifications/handleUploadEvent.handler
+    events:
+      - eventBridge:
+          pattern:
+            source:
+              - aws.s3
+            detail-type:
+              - Object Created
+            detail:
+              bucket:
+                name:
+                  - ${self:provider.environment.S3_BUCKET_NAME}
+
+resources:
+  Resources:
+    DocumentsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.S3_BUCKET_NAME}
+        NotificationConfiguration:
+          EventBridgeConfiguration:
+            EventBridgeEnabled: true
+        VersioningConfiguration:
+          Status: Enabled
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: true
+          BlockPublicPolicy: true
+          IgnorePublicAcls: true
+          RestrictPublicBuckets: true
+        LifecycleConfiguration:
+          Rules:
+            - Id: CleanupAbandonedUploads
+              Status: Enabled
+              TagFilters:
+                - Key: status
+                  Value: pending
+              ExpirationInDays: 1
+        CorsConfiguration:
+          CorsRules:
+            - AllowedHeaders:
+                - "*"
+              AllowedMethods:
+                - PUT
+                - GET
+              AllowedOrigins:
+                - "*"
+              ExposedHeaders:
+                - ETag
+              MaxAge: 3000
+
+    ShareLinksTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.SHARE_LINKS_TABLE}
+        BillingMode: PAY_PER_REQUEST
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: true
+        AttributeDefinitions:
+          - AttributeName: shareToken
+            AttributeType: S
+          - AttributeName: recipientUserId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: shareToken
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: RecipientIndex
+            KeySchema:
+              - AttributeName: recipientUserId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+
+    AuditLogsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.AUDIT_LOGS_TABLE}
+        BillingMode: PAY_PER_REQUEST
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: true
+        AttributeDefinitions:
+          - AttributeName: auditId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: auditId
+            KeyType: HASH
+
+    DocumentNotificationsTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: ${self:service}-${self:provider.stage}-notifications
+
+    DocumentsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.DOCUMENTS_TABLE}
+        BillingMode: PAY_PER_REQUEST
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: true
+        AttributeDefinitions:
+          - AttributeName: documentId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: documentId
+            KeyType: HASH
+
+    CognitoUserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: ${self:service}-${self:provider.stage}-user-pool
+        UsernameAttributes:
+          - email
+        AutoVerifiedAttributes:
+          - email
+        LambdaConfig:
+          PreSignUp: !GetAtt PreSignUpLambdaFunction.Arn
+          PostConfirmation: !GetAtt QuarantineUserLambdaFunction.Arn
+        AdminCreateUserConfig:
+          AllowAdminCreateUserOnly: false
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 8
+            RequireLowercase: true
+            RequireNumbers: true
+            RequireSymbols: true
+            RequireUppercase: true
+
+    CognitoUserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: ${self:service}-${self:provider.stage}-client
+        UserPoolId: !Ref CognitoUserPool
+        ExplicitAuthFlows:
+          - ALLOW_USER_SRP_AUTH
+          - ALLOW_REFRESH_TOKEN_AUTH
+          - ALLOW_USER_PASSWORD_AUTH
+        GenerateSecret: false
+
+    AdminGroup:
+      Type: AWS::Cognito::UserPoolGroup
+      Properties:
+        GroupName: ADMIN
+        UserPoolId: !Ref CognitoUserPool
+        Description: "Administrators with full access"
+
+    EditorGroup:
+      Type: AWS::Cognito::UserPoolGroup
+      Properties:
+        GroupName: EDITOR
+        UserPoolId: !Ref CognitoUserPool
+        Description: "Editors who can upload and manage their documents"
+
+    ViewerGroup:
+      Type: AWS::Cognito::UserPoolGroup
+      Properties:
+        GroupName: VIEWER
+        UserPoolId: !Ref CognitoUserPool
+        Description: "Viewers who can only view documents"
+
+    PreSignUpLambdaInvokePermission:
+      Type: AWS::Lambda::Permission
+      Properties:
+        Action: lambda:InvokeFunction
+        FunctionName: !Ref PreSignUpLambdaFunction
+        Principal: cognito-idp.amazonaws.com
+
+    QuarantineUserLambdaInvokePermission:
+      Type: AWS::Lambda::Permission
+      Properties:
+        Action: lambda:InvokeFunction
+        FunctionName: !Ref QuarantineUserLambdaFunction
+        Principal: cognito-idp.amazonaws.com
+
+  Outputs:
+    CognitoUserPoolId:
+      Value: !Ref CognitoUserPool
+    CognitoUserPoolClientId:
+      Value: !Ref CognitoUserPoolClient

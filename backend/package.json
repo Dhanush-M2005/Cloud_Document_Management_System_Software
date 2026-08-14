@@ -1,0 +1,20 @@
+{
+  "name": "cdms-backend",
+  "version": "1.0.0",
+  "description": "Backend for Cloud Document Management System",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.0.0",
+    "@aws-sdk/client-s3": "^3.0.0",
+    "@aws-sdk/lib-dynamodb": "^3.1110.0",
+    "@aws-sdk/s3-request-presigner": "^3.0.0",
+    "aws-jwt-verify": "^5.2.1",
+    "dotenv": "^17.4.2"
+  },
+  "devDependencies": {
+    "serverless": "^3.0.0"
+  }
+}
