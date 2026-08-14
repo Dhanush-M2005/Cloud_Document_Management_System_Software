@@ -235,9 +235,15 @@ const AdminDashboard = () => {
             {/* Status Toggle Modal Overlay */}
             {
                 statusConfig && (
-                    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(10px)', padding: '1rem' }}>
-                        <div className="glass-panel" style={{ width: '100%', maxWidth: '450px', textAlign: 'center', padding: '2.5rem', border: `1px solid ${statusConfig.isDeactivating ? 'rgba(244,63,94,0.3)' : 'rgba(16,185,129,0.3)'}`, boxShadow: `0 0 40px ${statusConfig.isDeactivating ? 'rgba(244,63,94,0.1)' : 'rgba(16,185,129,0.1)'}` }}>
-                            <div style={{ fontSize: '3rem', marginBottom: '1.5rem', animation: 'fadeUp 0.4s ease' }}>
+                    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(10px)', padding: '1rem' }} onClick={() => setStatusConfig(null)}>
+                        <div className="glass-panel" style={{ width: '100%', maxWidth: '450px', textAlign: 'center', padding: '2.5rem', border: `1px solid ${statusConfig.isDeactivating ? 'rgba(244,63,94,0.3)' : 'rgba(16,185,129,0.3)'}`, boxShadow: `0 0 40px ${statusConfig.isDeactivating ? 'rgba(244,63,94,0.1)' : 'rgba(16,185,129,0.1)'}` }} onClick={e => e.stopPropagation()}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                <button type="button" onClick={() => setStatusConfig(null)} className="icon-btn">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                                </button>
+                                <div style={{ width: '38px' }}></div>
+                            </div>
+                            <div style={{ fontSize: '3rem', marginBottom: '1.5rem', animation: 'fadeUp 0.4s ease', marginTop: '-3rem' }}>
                                 {statusConfig.isDeactivating ? '⚠️' : '🛡️'}
                             </div>
                             <h3 style={{ marginBottom: '1rem', color: statusConfig.isDeactivating ? 'var(--error)' : 'var(--success)' }}>

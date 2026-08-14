@@ -343,8 +343,8 @@ const Dashboard = () => {
             {/* Manage Shares Modal */}
             {
                 managingSharesFor && (
-                    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(8px)', padding: '1rem' }}>
-                        <div className="glass-panel" style={{ width: '100%', maxWidth: '650px', maxHeight: '85vh', overflowY: 'auto', padding: '2rem' }}>
+                    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(8px)', padding: '1rem' }} onClick={() => setManagingSharesFor(null)}>
+                        <div className="glass-panel" style={{ width: '100%', maxWidth: '650px', maxHeight: '85vh', overflowY: 'auto', padding: '2rem' }} onClick={e => e.stopPropagation()}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                                 <h3 className="text-gradient" style={{ margin: 0 }}>Active Share Links</h3>
                                 <button type="button" onClick={() => setManagingSharesFor(null)} className="icon-btn">
@@ -393,9 +393,15 @@ const Dashboard = () => {
             {/* Rename Modal Overlay */}
             {
                 editingDoc && (
-                    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(8px)', padding: '1rem' }}>
-                        <div className="glass-panel" style={{ width: '100%', maxWidth: '420px', padding: '2rem' }}>
-                            <h3 className="text-gradient" style={{ marginBottom: '1.5rem', fontSize: '1.4rem' }}>Rewire Data Tag</h3>
+                    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(8px)', padding: '1rem' }} onClick={() => setEditingDoc(null)}>
+                        <div className="glass-panel" style={{ width: '100%', maxWidth: '420px', padding: '2rem' }} onClick={e => e.stopPropagation()}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                                <button type="button" onClick={() => setEditingDoc(null)} className="icon-btn">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                                </button>
+                                <h3 className="text-gradient" style={{ margin: 0, fontSize: '1.4rem' }}>Rename File</h3>
+                                <div style={{ width: '38px' }}></div>
+                            </div>
                             <form onSubmit={submitRename}>
                                 <input
                                     type="text"
@@ -406,8 +412,8 @@ const Dashboard = () => {
                                     required
                                 />
                                 <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-                                    <button type="button" onClick={() => setEditingDoc(null)} className="btn btn-ghost">Abort</button>
-                                    <button type="submit" className="btn btn-primary" style={{ background: 'var(--primary-accent)' }}>Save Tag</button>
+                                    <button type="button" onClick={() => setEditingDoc(null)} className="btn btn-ghost">Cancel</button>
+                                    <button type="submit" className="btn btn-primary" style={{ background: 'var(--primary-accent)' }}>Save Changes</button>
                                 </div>
                             </form>
                         </div>
@@ -418,9 +424,15 @@ const Dashboard = () => {
             {/* Share Configuration Modal */}
             {
                 shareConfig && (
-                    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(8px)', padding: '1rem' }}>
-                        <div className="glass-panel" style={{ width: '100%', maxWidth: '480px', textAlign: 'center', padding: '2rem' }}>
-                            <div style={{ fontSize: '3rem', marginBottom: '1.5rem', animation: 'fadeUp 0.6s ease' }}>🔗</div>
+                    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(8px)', padding: '1rem' }} onClick={() => { setShareConfig(null); setShareResult(null); }}>
+                        <div className="glass-panel" style={{ width: '100%', maxWidth: '480px', textAlign: 'center', padding: '2rem' }} onClick={e => e.stopPropagation()}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                <button type="button" onClick={() => { setShareConfig(null); setShareResult(null); }} className="icon-btn">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                                </button>
+                                <div style={{ width: '38px', height: '38px' }}></div>
+                            </div>
+                            <div style={{ fontSize: '3rem', marginBottom: '1.5rem', animation: 'fadeUp 0.6s ease', marginTop: '-3rem' }}>🔗</div>
                             {!shareResult ? (
                                 <>
                                     <h3 className="text-gradient" style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>Create Share Link</h3>
@@ -434,37 +446,37 @@ const Dashboard = () => {
                                                     onClick={() => setAccessLevel('PUBLIC')}
                                                     style={{ flex: 1, textAlign: 'center', padding: '0.75rem', cursor: 'pointer', borderRadius: 'var(--radius-sm)', background: accessLevel === 'PUBLIC' ? 'linear-gradient(135deg, rgba(6,182,212,0.2), rgba(6,182,212,0.1))' : 'rgba(255,255,255,0.03)', color: accessLevel === 'PUBLIC' ? 'var(--primary-accent)' : 'var(--text-muted)', border: `1px solid ${accessLevel === 'PUBLIC' ? 'var(--primary-accent)' : 'rgba(255,255,255,0.05)'}`, transition: 'all 0.3s ease', fontSize: '0.85rem' }}
                                                 >
-                                                    Public Domain
+                                                    Public
                                                 </div>
                                                 <div
                                                     onClick={() => setAccessLevel('INTERNAL')}
                                                     style={{ flex: 1, textAlign: 'center', padding: '0.75rem', cursor: 'pointer', borderRadius: 'var(--radius-sm)', background: accessLevel === 'INTERNAL' ? 'linear-gradient(135deg, rgba(139,92,246,0.2), rgba(139,92,246,0.1))' : 'rgba(255,255,255,0.03)', color: accessLevel === 'INTERNAL' ? 'var(--secondary-accent)' : 'var(--text-muted)', border: `1px solid ${accessLevel === 'INTERNAL' ? 'var(--secondary-accent)' : 'rgba(255,255,255,0.05)'}`, transition: 'all 0.3s ease', fontSize: '0.85rem' }}
                                                 >
-                                                    Secure Internal
+                                                    Internal Users Only
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div style={{ marginBottom: '2rem', textAlign: 'left' }}>
-                                            <label style={{ display: 'block', marginBottom: '0.75rem', color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Action Authority</label>
+                                            <label style={{ display: 'block', marginBottom: '0.75rem', color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Permissions</label>
                                             <div style={{ display: 'flex', gap: '0.75rem' }}>
                                                 <div
                                                     onClick={() => setSharePermission('VIEW')}
                                                     style={{ flex: 1, textAlign: 'center', padding: '0.75rem', cursor: 'pointer', borderRadius: 'var(--radius-sm)', background: sharePermission === 'VIEW' ? 'linear-gradient(135deg, rgba(16,185,129,0.2), rgba(16,185,129,0.1))' : 'rgba(255,255,255,0.03)', color: sharePermission === 'VIEW' ? 'var(--success)' : 'var(--text-muted)', border: `1px solid ${sharePermission === 'VIEW' ? 'var(--success)' : 'rgba(255,255,255,0.05)'}`, transition: 'all 0.3s ease', fontSize: '0.85rem' }}
                                                 >
-                                                    View Layer
+                                                    View Only
                                                 </div>
                                                 <div
                                                     onClick={() => setSharePermission('DOWNLOAD')}
                                                     style={{ flex: 1, textAlign: 'center', padding: '0.75rem', cursor: 'pointer', borderRadius: 'var(--radius-sm)', background: sharePermission === 'DOWNLOAD' ? 'linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.1))' : 'rgba(255,255,255,0.03)', color: sharePermission === 'DOWNLOAD' ? 'var(--error)' : 'var(--text-muted)', border: `1px solid ${sharePermission === 'DOWNLOAD' ? 'var(--error)' : 'rgba(255,255,255,0.05)'}`, transition: 'all 0.3s ease', fontSize: '0.85rem' }}
                                                 >
-                                                    Download Rights
+                                                    Can Download
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div style={{ marginBottom: '2.5rem', textAlign: 'left' }}>
-                                            <label style={{ display: 'block', marginBottom: '0.75rem', color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Token Expiration Matrix</label>
+                                            <label style={{ display: 'block', marginBottom: '0.75rem', color: 'var(--text-muted)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Link Expiration</label>
                                             <div style={{ display: 'flex', gap: '1rem', width: '100%' }}>
                                                 <input
                                                     type="number"
@@ -484,8 +496,8 @@ const Dashboard = () => {
                                         </div>
 
                                         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-                                            <button type="button" onClick={() => setShareConfig(null)} className="btn btn-ghost" style={{ flex: 1 }}>Abort</button>
-                                            <button type="submit" className="btn btn-primary" disabled={isSharing} style={{ flex: 1 }}>{isSharing ? 'Synthesizing...' : 'Generate JWT'}</button>
+                                            <button type="button" onClick={() => { setShareConfig(null); setShareResult(null); }} className="btn btn-ghost" style={{ flex: 1 }}>Cancel</button>
+                                            <button type="submit" className="btn btn-primary" disabled={isSharing} style={{ flex: 1 }}>{isSharing ? 'Generating...' : 'Generate Link'}</button>
                                         </div>
                                     </form>
                                 </>
@@ -517,8 +529,14 @@ const Dashboard = () => {
             {/* Delete Confirmation Modal Overlay */}
             {
                 deleteConfig && (
-                    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(12px)', padding: '1rem' }}>
-                        <div className="glass-panel" style={{ width: '100%', maxWidth: '420px', textAlign: 'center', padding: '2.5rem', border: '1px solid rgba(244,63,94,0.3)', boxShadow: '0 0 40px rgba(244,63,94,0.1)' }}>
+                    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(12px)', padding: '1rem' }} onClick={() => setDeleteConfig(null)}>
+                        <div className="glass-panel" style={{ width: '100%', maxWidth: '420px', textAlign: 'center', padding: '2.5rem', border: '1px solid rgba(244,63,94,0.3)', boxShadow: '0 0 40px rgba(244,63,94,0.1)' }} onClick={e => e.stopPropagation()}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                <button type="button" onClick={() => setDeleteConfig(null)} className="icon-btn">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                                </button>
+                                <div style={{ width: '38px' }}></div>
+                            </div>
                             <div style={{ fontSize: '3rem', marginBottom: '1.5rem', animation: 'fadeUp 0.4s ease' }}>⚠️</div>
                             <h3 style={{ marginBottom: '1rem', color: 'var(--error)' }}>Purge Cryptographic Block?</h3>
                             <p style={{ color: 'var(--text-muted)', marginBottom: '2.5rem', fontSize: '0.95rem', lineHeight: '1.6' }}>Execution destroys the node <strong>{deleteConfig.fileName}</strong> permanently alongside all existing Share Tokens.</p>
@@ -527,7 +545,7 @@ const Dashboard = () => {
                                 <button type="button" onClick={executeDelete} disabled={isDeleting} className="btn" style={{ background: 'var(--error)', color: '#fff', fontSize: '1.05rem', padding: '1rem' }}>
                                     {isDeleting ? 'Encrypting Oblivion...' : 'Execute Force Purge'}
                                 </button>
-                                <button type="button" onClick={() => setDeleteConfig(null)} className="btn btn-ghost">Cancel Sequence</button>
+                                <button type="button" onClick={() => setDeleteConfig(null)} className="btn btn-ghost">Cancel</button>
                             </div>
                         </div>
                     </div>
