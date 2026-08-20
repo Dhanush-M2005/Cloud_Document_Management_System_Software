@@ -82,26 +82,17 @@ CDMS completely detaches the Frontend application layer from the Backend storage
 
 The platform utilizes loosely coupled microservices pushing a **Direct-to-S3 Offload Pattern**. 
 
-### 1. High-Level AWS Architecture
+### 1. High-Level Full-Stack Architecture
 
-```mermaid
-graph TD
-    Client[React Frontend / Firebase] -->|HTTP / JWT| API[Amazon API Gateway]
-    Client -->|Encrypted Stream via Pre-Signed URL| S3[Amazon S3]
-    
-    API -->|Routes Access Tokens| Auth[Auth Lambda]
-    API -->|Routes Network Traffic| Docs[Documents Lambda]
-    API -->|Routes Admin Controls| Admin[Admin Lambda]
-    API -->|Routes Tunnel Generation| Share[Sharing Lambda]
-    
-    Auth --> Cognito[AWS Cognito]
-    
-    Docs --> Dynamo[(Amazon DynamoDB)]
-    Admin --> Dynamo
-    Share --> Dynamo
-    
-    Dynamo -.->|Metadata References Secure Objects| S3
-```
+<div align="center">
+  <img src="architecture.svg" alt="Formal System Architecture Diagram" width="100%" /> 
+</div>
+
+#### Flow Breakdown:
+1. **Client-Side Architecture:** Uses Vite+React and Firebase Hosting. The app manages authentication state and retrieves temporary signing keys to handle massive file bytes safely on the edge.
+2. **Backend Serverless Core:** AWS API Gateway enforces token verification and passes specific domain traffic to isolated Lambda functions (Documents, Sharing, Admin).
+3. **Storage & Data Tier:** Structured metadata is mapped securely in Amazon DynamoDB. Physical binary workloads are entirely offloaded to an Amazon S3 Vault via strictly Pre-Signed URL mechanics.
+4. **Asynchronous Event Mesh:** S3 bucket creations implicitly fire an Amazon EventBridge trigger, uncoupling backend Notification Services from synchronous user API calls for flawless scaling.
 
 ### 2. The Ingestion Engine (Direct Stream Mechanism)
 
