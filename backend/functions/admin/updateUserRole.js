@@ -1,11 +1,12 @@
 const { CognitoIdentityProviderClient, AdminAddUserToGroupCommand, AdminRemoveUserFromGroupCommand } = require('@aws-sdk/client-cognito-identity-provider');
 const { requireRole } = require('../../utils/auth');
+const { logAction } = require('../../utils/audit');
 
 const cognito = new CognitoIdentityProviderClient({ region: process.env.AWS_REGION || 'us-east-1' });
 
 module.exports.handler = async (event) => {
     try {
-        await requireRole(event, ['ADMIN']);
+        const { id: adminId } = await requireRole(event, ['ADMIN']);
         const username = event.pathParameters.id;
         const { group } = JSON.parse(event.body || "{}"); // e.g 'EDITOR'
 
@@ -19,6 +20,9 @@ module.exports.handler = async (event) => {
             } else {
                 try { await cognito.send(new AdminAddUserToGroupCommand({ UserPoolId: process.env.USER_POOL_ID, Username: username, GroupName: group })); } catch (e) { }
             }
+            
+            // Audit Log
+            await logAction(adminId, `ROLE_UPDATED_TO_${group}`, username);
         }
 
         return { statusCode: 200, headers: { "Access-Control-Allow-Origin": "*" }, body: JSON.stringify({ success: true, code: "ROLE_UPDATED", data: null, message: `User role updated to ${group}` }) };

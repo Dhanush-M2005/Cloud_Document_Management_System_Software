@@ -355,6 +355,10 @@ resources:
           - email
         AutoVerifiedAttributes:
           - email
+        VerificationMessageTemplate:
+          DefaultEmailOption: CONFIRM_WITH_CODE
+          EmailMessage: "Your CDMS verification code is {####}. Please enter it to complete your registration."
+          EmailSubject: "CDMS - Identity Verification Code"
         LambdaConfig:
           PreSignUp: !GetAtt PreSignUpLambdaFunction.Arn
           PostConfirmation: !GetAtt QuarantineUserLambdaFunction.Arn

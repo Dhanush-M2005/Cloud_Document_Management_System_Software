@@ -14,6 +14,7 @@ const AdminDashboard = () => {
 
     const [statusConfig, setStatusConfig] = useState(null);
     const [isStatusUpdating, setIsStatusUpdating] = useState(false);
+    const [expandedLogId, setExpandedLogId] = useState(null);
 
     if (user?.role === 'VIEWER') {
         return <Navigate to="/dashboard" replace />;
@@ -55,12 +56,11 @@ const AdminDashboard = () => {
         }
     };
 
-    const promptStatusToggle = (username, currentStatus) => {
-        const action = currentStatus ? 'DISABLE' : 'ENABLE';
-        setStatusConfig({ username, action, isDeactivating: currentStatus });
+    const promptAction = (username, action) => {
+        setStatusConfig({ username, action });
     };
 
-    const executeStatusToggle = async () => {
+    const executeAction = async () => {
         if (!statusConfig) return;
         setIsStatusUpdating(true);
         try {
@@ -74,15 +74,17 @@ const AdminDashboard = () => {
             });
             const resJson = await res.json().catch(() => ({}));
             if (res.ok && resJson.success) {
-                addToast(`Identity ${statusConfig.action === 'DISABLE' ? 'Terminated' : 'Restored'} securely`, 'success');
-                if (statusConfig.action === 'DISABLE') {
+                addToast(resJson.message || `Action ${statusConfig.action} completed successfully`, 'success');
+                if (statusConfig.action === 'DELETE') {
                     setUsers(prev => prev.filter(u => u.Username !== statusConfig.username));
-                } else {
+                } else if (statusConfig.action === 'DISABLE') {
+                    setUsers(prev => prev.map(u => u.Username === statusConfig.username ? { ...u, Enabled: false } : u));
+                } else if (statusConfig.action === 'ENABLE') {
                     setUsers(prev => prev.map(u => u.Username === statusConfig.username ? { ...u, Enabled: true } : u));
                 }
                 setStatusConfig(null);
             } else {
-                addToast(resJson.message || 'Failed to update status', 'error');
+                addToast(resJson.message || 'Failed to update user', 'error');
             }
         } catch (err) {
             addToast(err.message, 'error');
@@ -182,15 +184,20 @@ const AdminDashboard = () => {
                                                 </span>
                                             </td>
                                             <td style={{ textAlign: 'right' }}>
-                                                {u.Enabled ? (
-                                                    <button className="icon-btn danger" title="Quarantine User" onClick={() => promptStatusToggle(u.Username, u.Enabled)}>
+                                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                                                    {u.Enabled ? (
+                                                        <button className="icon-btn warning" title="Quarantine User" onClick={() => promptAction(u.Username, 'DISABLE')}>
+                                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                                        </button>
+                                                    ) : (
+                                                        <button className="icon-btn success" title="Activate User" onClick={() => promptAction(u.Username, 'ENABLE')}>
+                                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                                                        </button>
+                                                    )}
+                                                    <button className="icon-btn danger" title="Delete User" onClick={() => promptAction(u.Username, 'DELETE')}>
                                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                                                     </button>
-                                                ) : (
-                                                    <button className="icon-btn success" title="Activate User" onClick={() => promptStatusToggle(u.Username, u.Enabled)}>
-                                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                                                    </button>
-                                                )}
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}
@@ -213,17 +220,50 @@ const AdminDashboard = () => {
                                 </thead>
                                 <tbody>
                                     {logs.map(log => (
-                                        <tr key={log.auditId}>
-                                            <td style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{new Date(log.timestamp).toLocaleString()}</td>
-                                            <td style={{ fontSize: '0.8rem', fontFamily: 'monospace', letterSpacing: '1px', opacity: 0.7 }}>{log.userId.substring(0, 18)}...</td>
-                                            <td style={{ fontWeight: 'bold', color: 'var(--text-pure)' }}>{log.action}</td>
-                                            <td style={{ fontSize: '0.85rem', fontFamily: 'monospace' }}>{log.documentId.substring(0, 12)}</td>
-                                            <td>
-                                                <span className={`badge ${log.status === 'SUCCESS' ? 'badge-green' : 'badge-red'}`}>
-                                                    {log.status}
-                                                </span>
-                                            </td>
-                                        </tr>
+                                        <React.Fragment key={log.auditId}>
+                                            <tr onClick={() => setExpandedLogId(expandedLogId === log.auditId ? null : log.auditId)} style={{ cursor: 'pointer', transition: 'background 0.2s ease', background: expandedLogId === log.auditId ? 'rgba(255,255,255,0.03)' : '' }}>
+                                                <td style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: expandedLogId === log.auditId ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease', color: 'var(--primary-accent)' }}><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                                        {new Date(log.timestamp).toLocaleString()}
+                                                    </div>
+                                                </td>
+                                                <td style={{ fontSize: '0.8rem', fontFamily: 'monospace', letterSpacing: '1px', opacity: 0.7 }}>{log.userId.substring(0, 18)}...</td>
+                                                <td style={{ fontWeight: 'bold', color: 'var(--text-pure)' }}>{log.action}</td>
+                                                <td style={{ fontSize: '0.85rem', fontFamily: 'monospace' }}>{log.documentId.substring(0, 12)}</td>
+                                                <td>
+                                                    <span className={`badge ${log.status === 'SUCCESS' ? 'badge-green' : 'badge-red'}`}>
+                                                        {log.status}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            {expandedLogId === log.auditId && (
+                                                <tr>
+                                                    <td colSpan="5" style={{ padding: 0, border: 'none' }}>
+                                                        <div style={{ padding: '2rem', background: 'rgba(0,0,0,0.3)', borderBottom: '1px solid var(--glass-border)', animation: 'fadeUp 0.3s ease', boxShadow: 'inset 0 4px 10px rgba(0,0,0,0.2)' }}>
+                                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem' }}>
+                                                                <div>
+                                                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem' }}>Audit Reference ID</div>
+                                                                    <div style={{ fontFamily: 'monospace', fontSize: '0.9rem', color: 'var(--primary-accent)' }}>{log.auditId}</div>
+                                                                </div>
+                                                                <div>
+                                                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem' }}>Identity Source</div>
+                                                                    <div style={{ fontFamily: 'monospace', fontSize: '0.9rem', color: 'var(--text-pure)' }}>{log.userId}</div>
+                                                                </div>
+                                                                <div>
+                                                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem' }}>Target Node</div>
+                                                                    <div style={{ fontFamily: 'monospace', fontSize: '0.9rem', color: 'var(--text-pure)' }}>{log.documentId}</div>
+                                                                </div>
+                                                                <div>
+                                                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem' }}>Exact Timestamp (UTC)</div>
+                                                                    <div style={{ fontFamily: 'monospace', fontSize: '0.9rem', color: 'var(--warning)' }}>{log.timestamp}</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </React.Fragment>
                                     ))}
                                 </tbody>
                             </table>
@@ -236,7 +276,7 @@ const AdminDashboard = () => {
             {
                 statusConfig && (
                     <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(10px)', padding: '1rem' }} onClick={() => setStatusConfig(null)}>
-                        <div className="glass-panel" style={{ width: '100%', maxWidth: '450px', textAlign: 'center', padding: '2.5rem', border: `1px solid ${statusConfig.isDeactivating ? 'rgba(244,63,94,0.3)' : 'rgba(16,185,129,0.3)'}`, boxShadow: `0 0 40px ${statusConfig.isDeactivating ? 'rgba(244,63,94,0.1)' : 'rgba(16,185,129,0.1)'}` }} onClick={e => e.stopPropagation()}>
+                        <div className="glass-panel" style={{ width: '100%', maxWidth: '450px', textAlign: 'center', padding: '2.5rem', border: `1px solid ${statusConfig.action === 'DELETE' ? 'rgba(244,63,94,0.5)' : (statusConfig.action === 'DISABLE' ? 'rgba(245,158,11,0.3)' : 'rgba(16,185,129,0.3)')}`, boxShadow: `0 0 40px ${statusConfig.action === 'DELETE' ? 'rgba(244,63,94,0.2)' : (statusConfig.action === 'DISABLE' ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)')}` }} onClick={e => e.stopPropagation()}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                                 <button type="button" onClick={() => setStatusConfig(null)} className="icon-btn">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
@@ -244,19 +284,19 @@ const AdminDashboard = () => {
                                 <div style={{ width: '38px' }}></div>
                             </div>
                             <div style={{ fontSize: '3rem', marginBottom: '1.5rem', animation: 'fadeUp 0.4s ease', marginTop: '-3rem' }}>
-                                {statusConfig.isDeactivating ? '⚠️' : '🛡️'}
+                                {statusConfig.action === 'DELETE' ? '💀' : (statusConfig.action === 'DISABLE' ? '⚠️' : '🛡️')}
                             </div>
-                            <h3 style={{ marginBottom: '1rem', color: statusConfig.isDeactivating ? 'var(--error)' : 'var(--success)' }}>
-                                {statusConfig.isDeactivating ? 'Quarantine User?' : 'Activate User?'}
+                            <h3 style={{ marginBottom: '1rem', color: statusConfig.action === 'DELETE' ? 'var(--error)' : (statusConfig.action === 'DISABLE' ? 'var(--warning)' : 'var(--success)') }}>
+                                {statusConfig.action === 'DELETE' ? 'Permanently Delete User?' : (statusConfig.action === 'DISABLE' ? 'Quarantine User?' : 'Activate User?')}
                             </h3>
                             <p style={{ color: 'var(--text-muted)', marginBottom: '2.5rem', fontSize: '0.95rem', lineHeight: '1.6' }}>
-                                Are you sure you want to {statusConfig.action === 'DISABLE' ? 'quarantine' : 'activate'} the account <br /><strong style={{ fontFamily: 'monospace', color: 'var(--text-pure)', padding: '0.2rem 0.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', letterSpacing: '1px' }}>{statusConfig.username}</strong>?<br /><br />
-                                {statusConfig.isDeactivating
-                                    ? "This action will disable the user's access to the system."
-                                    : "The user will instantly inherit permissions associated with their role."}
+                                Are you sure you want to {statusConfig.action === 'DELETE' ? 'permanently delete' : (statusConfig.action === 'DISABLE' ? 'quarantine' : 'activate')} the account <br /><strong style={{ fontFamily: 'monospace', color: 'var(--text-pure)', padding: '0.2rem 0.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', letterSpacing: '1px' }}>{statusConfig.username}</strong>?<br /><br />
+                                {statusConfig.action === 'DELETE'
+                                    ? "This action is irreversible and the user's data will be wiped out completely from the matrix."
+                                    : (statusConfig.action === 'DISABLE' ? "This action will temporarily disable the user's access to the system." : "The user will instantly inherit permissions associated with their role.")}
                             </p>
                             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-                                <button type="button" onClick={executeStatusToggle} disabled={isStatusUpdating} className="btn" style={{ flex: 1, background: statusConfig.isDeactivating ? 'var(--error)' : 'var(--success)', color: '#fff', fontSize: '1rem' }}>
+                                <button type="button" onClick={executeAction} disabled={isStatusUpdating} className="btn" style={{ flex: 1, background: statusConfig.action === 'DELETE' ? 'var(--error)' : (statusConfig.action === 'DISABLE' ? 'var(--warning)' : 'var(--success)'), color: '#fff', fontSize: '1rem' }}>
                                     {isStatusUpdating ? 'Executing...' : `Confirm`}
                                 </button>
                                 <button type="button" onClick={() => setStatusConfig(null)} disabled={isStatusUpdating} className="btn btn-ghost" style={{ flex: 1 }}>Cancel</button>

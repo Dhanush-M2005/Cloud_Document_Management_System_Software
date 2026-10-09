@@ -13,13 +13,15 @@ module.exports.handler = async (event) => {
 
         const response = await cognito.send(new ListUsersCommand({ UserPoolId: process.env.USER_POOL_ID }));
 
-        const safeUsers = response.Users.map(u => ({
-            Username: u.Username,
-            UserStatus: u.UserStatus,
-            Enabled: u.Enabled,
-            email: u.Attributes.find(a => a.Name === 'email')?.Value || '',
-            group: 'VIEWER'
-        }));
+        const safeUsers = response.Users
+            .filter(u => u.UserStatus !== 'UNCONFIRMED')
+            .map(u => ({
+                Username: u.Username,
+                UserStatus: u.UserStatus,
+                Enabled: u.Enabled,
+                email: u.Attributes.find(a => a.Name === 'email')?.Value || '',
+                group: 'VIEWER'
+            }));
 
         return { statusCode: 200, headers: { "Access-Control-Allow-Origin": "*" }, body: JSON.stringify({ success: true, code: "USERS_LISTED", data: safeUsers, message: "Users retrieved" }) };
     } catch (error) {
