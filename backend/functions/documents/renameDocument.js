@@ -12,11 +12,11 @@ module.exports.handler = async (event) => {
         const { newName } = body;
         if (!newName) return { statusCode: 400, headers: { "Access-Control-Allow-Origin": "*" }, body: JSON.stringify({ success: false, code: "BAD_REQUEST", message: "newName is required" }) };
 
-        await requireRole(event, ['EDITOR', 'ADMIN']);
-        const ownerId = await getUserIdFromEvent(event);
+        await requireRole(event, ['ADMIN']);
+        const adminId = await getUserIdFromEvent(event);
 
         const getRes = await docClient.send(new GetCommand({ TableName: process.env.DOCUMENTS_TABLE, Key: { documentId } }));
-        if (!getRes.Item || getRes.Item.ownerId !== ownerId) return { statusCode: 403, headers: { "Access-Control-Allow-Origin": "*" }, body: JSON.stringify({ success: false, code: "FORBIDDEN", data: null, message: "Forbidden" }) };
+        if (!getRes.Item) return { statusCode: 404, headers: { "Access-Control-Allow-Origin": "*" }, body: JSON.stringify({ success: false, code: "NOT_FOUND", data: null, message: "Document not found" }) };
 
         await docClient.send(new UpdateCommand({
             TableName: process.env.DOCUMENTS_TABLE,
@@ -25,7 +25,7 @@ module.exports.handler = async (event) => {
             ExpressionAttributeValues: { ":n": newName, ":t": new Date().toISOString() }
         }));
 
-        await logAction(ownerId, 'RENAME', documentId, 'SUCCESS');
+        await logAction(adminId, 'RENAME', documentId, 'SUCCESS');
 
         return { statusCode: 200, headers: { "Access-Control-Allow-Origin": "*" }, body: JSON.stringify({ success: true, code: "DOCUMENT_RENAMED", data: null, message: "Document renamed" }) };
     } catch (error) {

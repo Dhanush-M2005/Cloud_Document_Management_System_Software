@@ -25,8 +25,8 @@ module.exports.handler = async (event) => {
             return { statusCode: 400, headers: { "Access-Control-Allow-Origin": "*" }, body: JSON.stringify({ success: false, code: "INVALID_MIME_TYPE", data: null, message: "Unsupported file type. Allowed: PDF, JPG, PNG, DOC/DOCX." }) };
         }
 
-        if (fileSize > 50 * 1024 * 1024) {
-            return { statusCode: 400, headers: { "Access-Control-Allow-Origin": "*" }, body: JSON.stringify({ success: false, code: "PAYLOAD_TOO_LARGE", data: null, message: "Payload exceeds 50MB secure hard limit." }) };
+        if (fileSize > 100 * 1024 * 1024) {
+            return { statusCode: 400, headers: { "Access-Control-Allow-Origin": "*" }, body: JSON.stringify({ success: false, code: "PAYLOAD_TOO_LARGE", data: null, message: "Payload exceeds 100MB secure hard limit." }) };
         }
 
         // Strict RBAC boundary: Only editors can natively upload generic payloads.

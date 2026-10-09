@@ -10,12 +10,11 @@ const docClient = DynamoDBDocumentClient.from(new DynamoDBClient({ region: proce
 module.exports.handler = async (event) => {
     try {
         const documentId = event.pathParameters.id;
-        await requireRole(event, ['EDITOR', 'ADMIN']);
-        const ownerId = await getUserIdFromEvent(event);
-
+        await requireRole(event, ['ADMIN']);
+        
         const getRes = await docClient.send(new GetCommand({ TableName: process.env.DOCUMENTS_TABLE, Key: { documentId } }));
         const doc = getRes.Item;
-        if (!doc || doc.ownerId !== ownerId) return { statusCode: 403, headers: { "Access-Control-Allow-Origin": "*" }, body: JSON.stringify({ success: false, code: "FORBIDDEN", data: null, message: "Forbidden" }) };
+        if (!doc) return { statusCode: 404, headers: { "Access-Control-Allow-Origin": "*" }, body: JSON.stringify({ success: false, code: "NOT_FOUND", data: null, message: "Document not found" }) };
 
         // 1. Delete from S3
         await s3.send(new DeleteObjectCommand({ Bucket: process.env.S3_BUCKET_NAME, Key: doc.s3Key }));
@@ -36,7 +35,8 @@ module.exports.handler = async (event) => {
             }));
         }
 
-        await logAction(ownerId, 'DELETE', documentId, 'SUCCESS');
+        const adminId = await getUserIdFromEvent(event);
+        await logAction(adminId, 'DELETE', documentId, 'SUCCESS');
 
         return { statusCode: 200, headers: { "Access-Control-Allow-Origin": "*" }, body: JSON.stringify({ success: true, code: "DOCUMENT_DELETED", data: null, message: "Document deleted successfully" }) };
     } catch (error) {

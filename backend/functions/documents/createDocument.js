@@ -76,7 +76,8 @@ module.exports.handler = async (event) => {
                 uploadedAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
                 status: "ACTIVE",
-                accessType: "PRIVATE"
+                accessType: "PRIVATE",
+                visibility: body.visibility || "ALL"
             }
         };
 

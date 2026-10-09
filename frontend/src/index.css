@@ -181,6 +181,33 @@ input::placeholder {
   color: var(--text-pure);
 }
 
+.btn-back {
+  position: absolute;
+  top: 2rem;
+  left: 2rem;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.6rem 1.2rem;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+}
+
+.btn-back:hover {
+  color: var(--primary-accent);
+  background: rgba(6, 182, 212, 0.08);
+  border-color: rgba(6, 182, 212, 0.3);
+  transform: translateX(-4px);
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
+  text-shadow: 0 0 8px rgba(6, 182, 212, 0.5);
+}
+
 button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -204,7 +231,7 @@ table {
 
 th,
 td {
-  padding: 1.25rem 1.5rem;
+  padding: 1rem 1rem;
   text-align: left;
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 }
@@ -266,8 +293,8 @@ tbody tr:hover {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.05);
   color: var(--text-muted);
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 8px;
   display: inline-flex;
   align-items: center;

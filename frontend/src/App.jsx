@@ -23,6 +23,8 @@ const Header = () => {
   const location = useLocation();
   const currentPath = location.pathname;
 
+  if (['/', '/login', '/register', '/forgot-password'].includes(currentPath)) return null;
+
   return (
     <header className="glass-panel" style={{ padding: '1rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderRadius: '100px', marginTop: '2rem', marginBottom: '3rem', position: 'sticky', top: '1rem', zIndex: 50, border: '1px solid rgba(255,255,255,0.08)' }}>
       <Link to="/dashboard" style={{ fontSize: '1.3rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.6rem', color: 'var(--text-pure)', fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '2px' }}>
@@ -47,13 +49,24 @@ const Header = () => {
   );
 };
 
+const AppLayout = ({ children }) => {
+  const location = useLocation();
+  const isAuthPage = ['/', '/login', '/register', '/forgot-password'].includes(location.pathname);
+
+  return (
+    <div style={isAuthPage ? { width: '100%', overflowX: 'hidden' } : { maxWidth: '1200px', margin: '0 auto', padding: '0 1rem' }}>
+      <Header />
+      {children}
+    </div>
+  );
+};
+
 function App() {
   return (
     <ToastProvider>
       <AuthProvider>
         <Router>
-          <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1rem' }}>
-            <Header />
+          <AppLayout>
             <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
@@ -64,7 +77,7 @@ function App() {
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/upload" element={<ProtectedRoute><Upload /></ProtectedRoute>} />
             </Routes>
-          </div>
+          </AppLayout>
         </Router>
       </AuthProvider>
     </ToastProvider>

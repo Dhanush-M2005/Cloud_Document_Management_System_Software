@@ -1,4 +1,4 @@
-const { getUserIdFromEvent } = require('../../utils/auth');
+const { requireRole } = require('../../utils/auth');
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const { DynamoDBDocumentClient, ScanCommand } = require('@aws-sdk/lib-dynamodb');
 
@@ -7,18 +7,32 @@ const docClient = DynamoDBDocumentClient.from(client);
 
 module.exports.handler = async (event) => {
     try {
-        const ownerId = await getUserIdFromEvent(event);
+        const { role } = await requireRole(event, ['VIEWER', 'EDITOR', 'ADMIN']);
 
         const params = {
             TableName: process.env.DOCUMENTS_TABLE,
+            FilterExpression: '#status = :statusVal',
+            ExpressionAttributeNames: { '#status': 'status' },
+            ExpressionAttributeValues: { ':statusVal': 'ACTIVE' }
         };
 
         const data = await docClient.send(new ScanCommand(params));
-        const userDocs = data.Items.filter(item => item.ownerId === ownerId);
+        let userDocs = data.Items || [];
+
+        if (role === 'VIEWER') {
+            userDocs = userDocs.filter(d => !d.visibility || d.visibility === 'ALL');
+        } else if (role === 'EDITOR') {
+            userDocs = userDocs.filter(d => !d.visibility || d.visibility === 'ALL' || d.visibility === 'EDITOR_ADMIN');
+        }
 
         return {
             statusCode: 200,
-            headers: { "Access-Control-Allow-Origin": "*" },
+            headers: { 
+                "Access-Control-Allow-Origin": "*",
+                "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0"
+            },
             body: JSON.stringify({ success: true, code: "DOCUMENTS_LISTED", data: userDocs, message: "Documents retrieved successfully" })
         };
     } catch (error) {

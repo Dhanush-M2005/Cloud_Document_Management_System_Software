@@ -21,7 +21,7 @@ module.exports.handler = async (event) => {
         }));
 
         const doc = getRes.Item;
-        if (!doc || (doc.ownerId !== ownerId && doc.accessType === "PRIVATE")) {
+        if (!doc) {
             return { statusCode: 403, headers: { "Access-Control-Allow-Origin": "*" }, body: JSON.stringify({ success: false, code: "FORBIDDEN", data: null, message: "Forbidden" }) };
         }
 
@@ -39,7 +39,8 @@ module.exports.handler = async (event) => {
         });
         const downloadUrl = await getSignedUrl(s3, command, { expiresIn: 300 });
 
-        await logAction(ownerId, 'DOWNLOAD', documentId, 'SUCCESS');
+        const actionType = (event.queryStringParameters && event.queryStringParameters.action === 'view') ? 'VIEW' : 'DOWNLOAD';
+        await logAction(ownerId, actionType, documentId, 'SUCCESS');
 
         return {
             statusCode: 200,

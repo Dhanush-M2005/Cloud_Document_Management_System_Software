@@ -20,6 +20,7 @@ module.exports.handler = async (event) => {
                 UserStatus: u.UserStatus,
                 Enabled: u.Enabled,
                 email: u.Attributes.find(a => a.Name === 'email')?.Value || '',
+                name: u.Attributes.find(a => a.Name === 'name')?.Value || 'Unknown User',
                 group: 'VIEWER'
             }));
 

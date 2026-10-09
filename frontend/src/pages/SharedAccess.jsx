@@ -8,6 +8,7 @@ const SharedAccess = () => {
     const [fileData, setFileData] = useState(null);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
+    const [isFocused, setIsFocused] = useState(true);
 
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/dev';
 
@@ -46,6 +47,70 @@ const SharedAccess = () => {
         const interval = setInterval(checkExpiry, 1000);
 
         return () => clearInterval(interval);
+    }, [fileData]);
+
+    // Global security overrides for view-only mode
+    useEffect(() => {
+        if (fileData && fileData.permission === 'VIEW') {
+            const handleContextMenu = (e) => e.preventDefault();
+            const handleKeyDown = (e) => {
+                if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 'P' || e.key === 's' || e.key === 'S' || e.key === 'u' || e.key === 'U')) {
+                    e.preventDefault();
+                }
+            };
+            const handleDragStart = (e) => e.preventDefault();
+            
+            const handleBlur = () => {
+                setTimeout(() => {
+                    if (document.activeElement && document.activeElement.tagName === 'IFRAME') {
+                        return;
+                    }
+                    setIsFocused(false);
+                }, 50);
+            };
+            const handleFocus = () => setIsFocused(true);
+            const handleVisibilityChange = () => {
+                if (document.visibilityState === 'hidden') {
+                    setIsFocused(false);
+                } else if (document.visibilityState === 'visible') {
+                    setIsFocused(true);
+                }
+            };
+            const handleKeyUp = (e) => {
+                if (e.key === 'PrintScreen') {
+                    navigator.clipboard.writeText('Security violation: Screenshots are strictly prohibited.');
+                    setIsFocused(false);
+                    setTimeout(() => setIsFocused(true), 3000);
+                }
+            };
+
+            window.addEventListener('contextmenu', handleContextMenu);
+            window.addEventListener('keydown', handleKeyDown);
+            window.addEventListener('dragstart', handleDragStart);
+            window.addEventListener('blur', handleBlur);
+            window.addEventListener('focus', handleFocus);
+            window.addEventListener('keyup', handleKeyUp);
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+
+            // Hack: Constantly steal focus from the iframe so the main window can always detect Snipping Tool
+            const focusStealer = setInterval(() => {
+                if (document.activeElement && document.activeElement.tagName === 'IFRAME') {
+                    document.activeElement.blur();
+                    window.focus();
+                }
+            }, 100);
+
+            return () => {
+                window.removeEventListener('contextmenu', handleContextMenu);
+                window.removeEventListener('keydown', handleKeyDown);
+                window.removeEventListener('dragstart', handleDragStart);
+                window.removeEventListener('blur', handleBlur);
+                window.removeEventListener('focus', handleFocus);
+                window.removeEventListener('keyup', handleKeyUp);
+                document.removeEventListener('visibilitychange', handleVisibilityChange);
+                clearInterval(focusStealer);
+            };
+        }
     }, [fileData]);
 
     return (
@@ -88,16 +153,45 @@ const SharedAccess = () => {
                                     </button>
                                 </a>
                             ) : (
-                                <div style={{ position: 'relative', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 'var(--radius-md)', background: '#fff', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }} onContextMenu={e => e.preventDefault()}>
+                                <div style={{ position: 'relative', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 'var(--radius-md)', background: '#333333', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', height: '700px' }} onContextMenu={e => e.preventDefault()}>
+                                    
+                                    {!isFocused && (
+                                        <div 
+                                            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: '#000', zIndex: 100000, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', cursor: 'pointer' }}
+                                            onClick={() => {
+                                                window.focus();
+                                                setIsFocused(true);
+                                            }}
+                                        >
+                                            <div style={{ fontSize: '4rem', marginBottom: '1rem', animation: 'fadeUp 0.3s ease' }}>🛡️</div>
+                                            <h3 style={{ color: 'var(--error)', margin: '0 0 0.5rem 0', letterSpacing: '0.1em' }}>SECURITY PROTOCOL ACTIVATED</h3>
+                                            <p style={{ color: 'var(--text-muted)' }}>Screen capture, sharing, and background viewing are strictly prohibited.</p>
+                                            <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '1.5rem', opacity: 0.5, border: '1px solid rgba(255,255,255,0.1)', padding: '0.5rem 1rem', borderRadius: '20px' }}>Click anywhere to resume secure viewing</p>
+                                        </div>
+                                    )}
+
+                                    {/* Watermark Overlay */}
+                                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none', background: 'repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 2px, transparent 2px, transparent 100px)', zIndex: 10001, display: 'flex', flexWrap: 'wrap', overflow: 'hidden', opacity: 0.3 }}>
+                                        {Array.from({ length: 30 }).map((_, i) => (
+                                            <div key={i} style={{ padding: '4rem', transform: 'rotate(-45deg)', color: 'rgba(255,255,255,0.1)', fontSize: '1.2rem', fontWeight: 'bold', whiteSpace: 'nowrap', userSelect: 'none' }}>
+                                                CONFIDENTIAL • VIEW ONLY • {new Date().toISOString().split('T')[0]}
+                                            </div>
+                                        ))}
+                                    </div>
                                     {fileData.fileType.startsWith('image/') ? (
-                                        <img src={fileData.downloadUrl} alt="Secure Visual" style={{ width: '100%', pointerEvents: 'none', userSelect: 'none', display: 'block' }} />
+                                        <img src={fileData.downloadUrl} alt="Secure Visual" style={{ width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none', userSelect: 'none', display: 'block' }} />
                                     ) : (
                                         <>
-                                            <iframe src={`https://docs.google.com/gview?url=${encodeURIComponent(fileData.downloadUrl)}&embedded=true`} width="100%" height="700px" style={{ border: 'none', display: 'block' }} title="Secure Document Matrix" />
-                                            <div
-                                                style={{ position: 'absolute', top: 0, right: 0, width: '60px', height: '60px', background: '#323639', cursor: 'default', zIndex: 50 }}
-                                                onClick={e => { e.preventDefault(); e.stopPropagation(); }}
-                                                title="View-only mode restrictions applied."
+                                            {/* Google Docs Viewer completely replaces the native PDF viewer. 
+                                                It allows mouse-wheel scrolling naturally while preventing native 'Save As PDF' right-clicks. 
+                                                We add a small block over the top right corner to hide the 'Pop-out' button. */}
+                                            <div style={{ position: 'absolute', top: 0, right: 0, width: '50px', height: '50px', background: '#333333', zIndex: 10 }}></div>
+                                            
+                                            <iframe 
+                                                id="secure-iframe"
+                                                src={`https://docs.google.com/viewer?url=${encodeURIComponent(fileData.downloadUrl)}&embedded=true`} 
+                                                style={{ width: '100%', height: '100%', border: 'none', display: 'block' }} 
+                                                title="Secure Document Matrix" 
                                             />
                                         </>
                                     )}

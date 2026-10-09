@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { Amplify } from 'aws-amplify';
-import { fetchAuthSession, signIn, signOut, signUp, confirmSignUp, getCurrentUser, resetPassword, confirmResetPassword } from 'aws-amplify/auth';
+import { fetchAuthSession, signIn, signOut, signUp, confirmSignUp, getCurrentUser, resetPassword, confirmResetPassword, confirmSignIn, resendSignUpCode } from 'aws-amplify/auth';
 import { cognitoUserPoolsTokenProvider } from 'aws-amplify/auth/cognito';
 import { sessionStorage } from 'aws-amplify/utils';
 
@@ -53,6 +53,9 @@ export const AuthProvider = ({ children }) => {
         const { isSignedIn, nextStep } = await signIn({ username: email, password });
 
         if (!isSignedIn) {
+            if (nextStep?.signInStep === 'CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED') {
+                return { isNewPasswordRequired: true };
+            }
             throw new Error(`Login incomplete: Account may need verification (${nextStep?.signInStep || 'Unknown'})`);
         }
 
@@ -75,11 +78,23 @@ export const AuthProvider = ({ children }) => {
     };
 
     const register = async (name, email, password) => {
-        await signUp({
-            username: email,
-            password,
-            options: { userAttributes: { email, name } }
-        });
+        try {
+            await signUp({
+                username: email,
+                password,
+                options: { userAttributes: { email, name } }
+            });
+        } catch (error) {
+            if (error.name === 'UsernameExistsException') {
+                try {
+                    await resendSignUpCode({ username: email });
+                    return true;
+                } catch (resendError) {
+                    throw error;
+                }
+            }
+            throw error;
+        }
         return true;
     };
 
@@ -98,13 +113,47 @@ export const AuthProvider = ({ children }) => {
         return true;
     };
 
+    const confirmNewPassword = async (newPassword) => {
+        const { isSignUpComplete, isSignedIn, nextStep } = await confirmSignIn({ challengeResponse: newPassword });
+        
+        if (!isSignedIn) {
+             throw new Error(`Login incomplete: Account may need verification (${nextStep?.signInStep || 'Unknown'})`);
+        }
+
+        const session = await fetchAuthSession();
+        const groups = session.tokens.accessToken.payload['cognito:groups'] || [];
+        const role = groups.includes('ADMIN') ? 'ADMIN' : (groups.includes('EDITOR') ? 'EDITOR' : 'VIEWER');
+        
+        setUser({
+            name: session.tokens.idToken.payload.name || session.tokens.idToken.payload.email,
+            email: session.tokens.idToken.payload.email,
+            role,
+            groups,
+            token: session.tokens.idToken.toString()
+        });
+        return true;
+    };
+
     const logout = async () => {
         await signOut();
         setUser(null);
     };
 
+    const cancelRegistration = async (email) => {
+        const apiUrl = import.meta.env.VITE_API_URL;
+        const res = await fetch(`${apiUrl}/auth/cancel-registration`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        const resJson = await res.json().catch(() => ({}));
+        if (!resJson.success) {
+            console.error("Failed to cancel registration:", resJson.message);
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, loading, login, register, verifyOtp, sendPasswordReset, confirmPasswordResetCode, logout }}>
+        <AuthContext.Provider value={{ user, loading, login, register, verifyOtp, sendPasswordReset, confirmPasswordResetCode, confirmNewPassword, logout, cancelRegistration }}>
             {children}
         </AuthContext.Provider>
     );
