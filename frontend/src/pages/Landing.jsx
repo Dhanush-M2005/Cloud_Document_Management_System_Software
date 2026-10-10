@@ -217,11 +217,11 @@ const Landing = () => {
                     </span>
                 </div>
 
-                <h1 className="text-gradient" style={{ fontSize: 'clamp(2.5rem, 5vw, 4.5rem)', lineHeight: '1.1', marginBottom: '1.5rem', fontWeight: '700' }}>
+                <h1 className="text-gradient" style={{ textAlign: 'center', fontSize: 'clamp(2.5rem, 5vw, 4.5rem)', lineHeight: '1.1', marginBottom: '1.5rem', fontWeight: '700' }}>
                     Zero-Trust Access Control & Cloud Storage
                 </h1>
 
-                <p style={{ color: 'var(--text-muted)', fontSize: 'clamp(1rem, 2vw, 1.25rem)', marginBottom: '3rem', maxWidth: '650px', margin: '0 auto 3rem auto', lineHeight: '1.6' }}>
+                <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: 'clamp(1rem, 2vw, 1.25rem)', marginBottom: '3rem', maxWidth: '650px', margin: '0 auto 3rem auto', lineHeight: '1.6' }}>
                     A military-grade cryptographic vault engineered to securely upload, synchronize, and distribute your absolute-zero documents dynamically inside the AWS cloud environment.
                 </p>
 
